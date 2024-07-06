@@ -1,4 +1,6 @@
+import axios from "axios";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 type FormValues = {
   roll: number;
   department: string;
@@ -50,7 +52,7 @@ const optionsSection: Option[] = [
 ];
 const Result = () => {
   let [values, setValues] = useState(initialValue);
-  const [selectedValue, setSelectedValue] = useState<string>("");
+  let navigate = useNavigate();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -60,27 +62,40 @@ const Result = () => {
       ...values,
       [name]: name === "roll" ? Number(value) : value,
     });
-
-    setSelectedValue(value);
   };
 
-  const handleClick = () => {
-    console.log(values);
-   
-    console.log(x);
-    
+  const handleClick = async () => {
+    let data = {
+      department: values.department,
+      session: values.session,
+      semester: values.semester,
+      roll: values.roll,
+    };
+
+    let user_data = await axios.get("http://localhost:8000/getresult", {
+      params: data,
+    });
+
+    if (user_data.data.data) {
+      navigate("/showresult", { state: { data: user_data.data.data } });
+    }
   };
 
   return (
     <>
-      <input type="roll" name="roll" onChange={handleChange} />
+      <input
+        placeholder="Roll"
+        type="roll"
+        name="roll"
+        onChange={handleChange}
+      />
       <label htmlFor="department">Department: </label>
 
       <select
         onChange={handleChange}
         name="department"
         id="department"
-        value={selectedValue}
+        value={values.department || ""}
       >
         <option value="" disabled>
           Select a department
@@ -93,7 +108,15 @@ const Result = () => {
       </select>
       <label htmlFor="semester">Semester: </label>
 
-      <select onChange={handleChange} name="semester" id="semester">
+      <select
+        onChange={handleChange}
+        name="semester"
+        id="semester"
+        value={values.semester || ""}
+      >
+        <option value="" disabled>
+          Select a Semester
+        </option>
         {optionsSemester.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
@@ -102,7 +125,15 @@ const Result = () => {
       </select>
       <label htmlFor="session">Session: </label>
 
-      <select onChange={handleChange} name="session" id="session">
+      <select
+        onChange={handleChange}
+        name="session"
+        id="session"
+        value={values.session || ""}
+      >
+        <option value="" disabled>
+          Select a Session
+        </option>
         {optionsSection.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
